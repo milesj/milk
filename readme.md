@@ -1,8 +1,9 @@
-     __    __     __     __         __  __
-    /\ "-./  \   /\ \   /\ \       /\ \/ /
-    \ \ \-./\ \  \ \ \  \ \ \____  \ \  _"-.
-     \ \_\ \ \_\  \ \_\  \ \_____\  \ \_\ \_\
-      \/_/  \/_/   \/_/   \/_____/   \/_/\/_/
+                       __    __     __     __         __  __
+                      /\ "-./  \   /\ \   /\ \       /\ \/ /
+                      \ \ \-./\ \  \ \ \  \ \ \____  \ \  _"-.
+                       \ \_\ \ \_\  \ \_\  \ \_____\  \ \_\ \_\
+                        \/_/  \/_/   \/_/   \/_____/   \/_/\/_/
+                                                                v0.0.0
 
 Milk is a fork of the popular MooTools library which aims to refactor it for prime time.
 
@@ -23,7 +24,7 @@ Besides the vendor requirement, the following new features can be found.
 And the following MooTools More modules have been merged into the core of Milk.
 
 * `Class.Binds`
-* `Elements.from`'
+* `Elements.from`
 * `Element.Event.Pseudos`
 * `Element.Measure`
 * `Element.Position`
@@ -39,7 +40,7 @@ or a replacement has been provided.
 * `Browser` - Use feature detection instead
 * `Fx` - Use CSS3 transitions and animations instead
 * `Slick` - Replaced with `querySelectorAll()` and other built-in browser functionality
-* `Array`, `Number`, `Object`, `String` - Prototype functions will be inherited through Lodash (or Underscore)
+* `Array`, `Number`, `Object`, `String` - Prototype functions will be inherited through vendors (above)
 * `JSON` - Use the built-in browser functionality instead
 
 Most, if not all of the MooTools More modules will no longer be compatible.
