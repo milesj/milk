@@ -1,11 +1,11 @@
-                       __    __     __     __         __  __
-                      /\ "-./  \   /\ \   /\ \       /\ \/ /
-                      \ \ \-./\ \  \ \ \  \ \ \____  \ \  _"-.
-                       \ \_\ \ \_\  \ \_\  \ \_____\  \ \_\ \_\
-                        \/_/  \/_/   \/_/   \/_____/   \/_/\/_/
-                                                                v0.0.0
+                               __    __     __     __         __  __
+                              /\ "-./  \   /\ \   /\ \       /\ \/ /
+                              \ \ \-./\ \  \ \ \  \ \ \____  \ \  _"-.
+                               \ \_\ \ \_\  \ \_\  \ \_____\  \ \_\ \_\
+                                \/_/  \/_/   \/_/   \/_____/   \/_/\/_/
+                                                                        v0.0.0
 
-Milk is a fork of the popular MooTools library which aims to refactor it for prime time.
+Milk, a fork of the popular MooTools library which aims to refactor it for prime time.
 
 ### What's new? ###
 
