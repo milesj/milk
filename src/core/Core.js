@@ -43,7 +43,7 @@
      *  Array
      *      each(f, b)          each(a, f, b)       each(a, f, b)       each(f, ~, ~)
      *      forEach(f, b)       forEach(a, f, b)    forEach(a, f, b)    forEach(f, b)
-     *      clone()             x                   x                   clone()
+     *      clone()             x                   x                   clone()                     !!!
      *      every(f, b)         every(a, f, b)      every(a, f, b)      every(f, b)
      *      filter(f, b)        filter(a, f, b)     filter(a, f, b)     filter(f, b)
      *      indexOf(v, i)       indexOf(a, v, i)    indexOf(a, v, ~)    indexOf(v, i)
@@ -54,14 +54,14 @@
      *      associate(a)        object(a, a)        object(a, a)        zip(a)
      *      link(o)             x                   x                   x
      *      contains(v, i)      contains(a, v, i)   contains(a, v)      x
-     *      append(a)           union(a, a)         union(a, a)         add(v)
+     *      append(a)           union(a, a)         union(a, a)         add(v)                      !!!
      *      getLast()           last()              last()              last(i)
      *      getRandom()         x                   x                   sample(i)
-     *      include(v)          include(a, v, i)    include(a, v, i)    x
-     *      combine(a)          union(a, a)         union(a, a)         union(a)
+     *      include(v)          include(a, v, i)    include(a, v, i)    x                           !!!
+     *      combine(a)          union(a, a)         union(a, a)         union(a)                    !!!
      *      erase(v)            x                   x                   remove()
      *      empty()             x                   x                   x
-     *      flatten()           flatten(a, ~, f, b) flatten(a, ~)       flatten(i)
+     *      flatten()           flatten(a, ~, f, b) flatten(a, ~)       flatten(i)                  !!!
      *      pick()              x                   x                   x
      *      hexToRgb()          x                   x                   x
      *      rgbToHex()          x                   x                   x
@@ -69,7 +69,7 @@
      *      each(o, f, b)       each(o, f, b)       each(o, f, b)       each(f, ~, ~)
      *      forEach(o, f, b)    forEach(o, f, b)    forEach(o, f, b)    forEach(f, b)
      *      clone(o)            clone(o)            clone(o)            clone(o, ~)
-     *      merge(o, .)         merge(o, ., f, b)   x                   merge(o, o, ~, ~)
+     *      merge(o, .)         merge(o, ., f, b)   x                   merge(o, o, ~, ~)           !!!
      *      append(o)           assign(o, o)        extend(o, o)        x
      *      subset(o, k)        pick(o, f, b)       pick(o, k*)         select(o, k)
      *      map(o, f, b)        map(o, f, b)        map(o, f, b)        map(f, b)
@@ -94,7 +94,7 @@
      *  Function
      *      bind(b)             bind(f, b, .)       bind(f, b, .)       bind(b, .)
      *      pass(a, b)          compose(f, f)       compose(f, f)       x
-     *      delay(i, b, a)      delay(f, i, ~)      delay(f, i, ~)      delay(i, .)
+     *      delay(i, b, a)      delay(f, i, ~)      delay(f, i, ~)      delay(i, .)                 !!!
      *      periodical(i, b, a) x                   x                   every(i, .)
      *      attempt(a, b)       x                   x                   x
      *  String
@@ -159,6 +159,10 @@
     function instanceOf(item, object) {
         if (!item) {
             return false;
+        }
+
+        if (object.prototype.isPrototypeOf(item)) {
+            return true;
         }
 
         var constructor = item.$constructor || item.constructor;
@@ -404,6 +408,9 @@
         }
     });
 
+    // Set for object since it doesn't extend function
+    Object.extend = extend.overloadSetter();
+
     /*------------------------------------ Types ------------------------------------*/
 
     /**
@@ -627,6 +634,31 @@
         return [item];
     };
 
+    Array.implement({
+
+        clone: function() {
+            var i = this.length, clone = new Array(i), value;
+
+            while (i--) {
+                value = this[0];
+
+                switch (typeOf(value)) {
+                    case 'array':
+                        value = value.clone();
+                    break;
+                    case 'object':
+                        value = Object.clone(value);
+                    break;
+                }
+
+                clone[i] = value;
+            }
+
+            return clone;
+        }
+
+    });
+
     /**
      * Convert the passed value to a number if it is not one.
      *
@@ -648,6 +680,32 @@
     String.from = function(item) {
         return item + '';
     };
+
+    Object.extend({
+
+        reset: function(object) {
+            var key, value;
+
+            for (key in object) {
+                value = object[key];
+
+                switch (typeOf(value)) {
+                    case 'object':
+                        var F = function() {};
+                            F.prototype = value;
+
+                        object[key] = Object.reset(new F());
+                    break;
+                    case 'array':
+                        object[key] = value.clone();
+                    break;
+                }
+            }
+
+            return object;
+        }
+
+    });
 
     // Extend native objects if lodash or underscore exist
     var vendor = this._ || this.lodash || this.underscore || null;
