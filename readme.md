@@ -35,7 +35,7 @@ And the following MooTools More modules have been merged into the core of Milk.
 The following MooTools Core modules have been removed from Milk. Either their functionality is obsolete,
 or a replacement has been provided.
 
-* Deprecated 1.2/1.3 functionality like `chk`, `pick`, etc
+* 1.2/1.3 functionality like `chk`, `pick`, etc
 * Old browser compatibility
 * `Browser` - Use feature detection instead
 * `Fx` - Use CSS3 transitions and animations instead
@@ -51,12 +51,12 @@ Supporting More modules will be on a case by case basis.
 * Chrome 8+
 * Firefox 4+
 * Internet Explorer 9+
-* Safari 4+
-* Opera 10.5+
+* Safari 5.1+
+* Opera 12+
 
 Why a minimum requirement of IE9? Simply put, IE8 and below do not support functionality like `getComputedStyle()`,
-`getElementsByClassName()`, `matchesSelector()`, class lists, advanced CSS3 selectors, HTML5 elements, event handling, and much more.
-By removing these outdated browsers as a dependency, the code base can be greatly reduced.
+`getElementsByClassName()`, `matchesSelector()`, class lists, ECMAScript 5 features, advanced CSS3 selectors, HTML5 elements,
+event handling, and much more. By removing these outdated browsers as a dependency, the code base can be greatly reduced.
 
 Furthermore, Milk is intended to be used in modern browsers supporting the latest and greatest.
 It's best to start preparing for the future.
