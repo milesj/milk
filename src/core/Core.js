@@ -118,7 +118,7 @@
                 return 'element';
 
             } else if (item.nodeType === 3) {
-                return /\S/.test(item.nodeValue) ? 'textnode' : 'whitespace';
+                return (/\S/.test(item.nodeValue)) ? 'textnode' : 'whitespace';
             }
         } else if (typeof item.length === 'number') {
             if ('callee' in item) {
@@ -604,7 +604,7 @@
                                 args.unshift(this);
 
                             return vendor[func].apply(this, args);
-                        }
+                        };
                     }(func)));
                 }
             }
@@ -706,7 +706,7 @@
         var type = typeOf(item);
 
         if (type !== 'string' && Type.isEnumerable(item)) {
-            return (type === 'array') ? item : Array.prototype.slice.call(item)
+            return (type === 'array') ? item : Array.prototype.slice.call(item);
         }
 
         return [item];
@@ -905,7 +905,7 @@
                     break;
                 }
 
-                if (value != null) {
+                if (value) {
                     queryString.push(result);
                 }
             });

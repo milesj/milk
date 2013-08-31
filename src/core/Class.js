@@ -124,8 +124,8 @@
         }
 
         var name = this.$caller.$name,
-            parent = this.$caller.$owner.parent,
-            previous = parent ? parent.prototype[name] : null;
+            owner = this.$caller.$owner.parent,
+            previous = owner ? owner.prototype[name] : null;
 
         if (!previous) {
             throw new Error('The method "' + name + '" has no parent.');
