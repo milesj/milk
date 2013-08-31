@@ -107,7 +107,9 @@
      * @returns {String}
      */
     function typeOf(item) {
-        if (item === null) {
+        var type = (typeof item);
+
+        if (item === null || type === 'undefined') {
             return 'null';
 
         } else if (item.$family) {
@@ -129,7 +131,7 @@
             }
         }
 
-        return (typeof item);
+        return type;
     }
 
     /**
@@ -141,7 +143,7 @@
      * @returns {boolean}
      */
     function instanceOf(item, object) {
-        if (!item) {
+        if (typeOf(item) === 'null') {
             return false;
         }
 
@@ -192,7 +194,7 @@
                 value += value;
             }
 
-            return value.toInt(16);
+            return parseInt(value, 16);
         });
     }
 

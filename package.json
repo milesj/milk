@@ -22,6 +22,9 @@
 	"devDependencies": {
 		"grunt": "*",
 		"grunt-contrib-uglify": "*",
-		"grunt-contrib-jshint": "*"
+		"grunt-contrib-jshint": "*",
+        "mocha": "*",
+        "chai": "*",
+        "lodash": "*"
 	}
 }

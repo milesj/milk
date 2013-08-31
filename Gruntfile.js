@@ -9,7 +9,10 @@ module.exports = function(grunt) {
                 validthis: true
 			},
 			build: {
-				src: ['src/core/*.js']
+				src: [
+                    'src/core/*.js',
+                    'test/core/*.js'
+                ]
 			}
 		}
 	});
