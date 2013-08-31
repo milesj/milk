@@ -1,42 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Milk</title>
-  <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js"></script>
-  <script type="text/javascript" src="src/core/Core.js"></script>
-  <script type="text/javascript" src="src/core/Class.js"></script>
-  <script type="text/javascript">
-    document.addEventListener('DOMContentLoaded', function() {
-      var A = new Class({
-        initialize: function() {
-          this.foo = 'bar';
-        },
-        a: function() {}
-      });
+	<title>Milk</title>
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js"></script>
+	<script type="text/javascript" src="src/core/Core.js"></script>
+	<script type="text/javascript" src="src/core/Class.js"></script>
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', function () {
+			var A = new Class({
+				name: 'a',
+				initialize: function () {
+					this.foo = 'bar';
+				},
+				a: function () {
+				}
+			});
+			var B = new Class({
+				Extends: A,
+				Implements: [Chain, Options],
+				name: 'b',
+				b: function () {
+				}
+			});
+			var C = new Class({
+				Extends: B,
+				Implements: [Events],
+				Binds: ['c'],
+				name: 'c',
+				initialize: function (p) {
+					this.parent();
+					this.setOptions(p);
+				},
+				c: function () {
+					console.log(this);
+				}
+			});
 
-      var B = new Class({
-        Extends: A,
-        Implements: [Chain, Options],
-        b: function() {}
-      });
+			var a1 = new A();
+			var b1 = new B();
+			var c1 = new C();
 
-      var C = new Class({
-        Extends: B,
-        Implements: [Events],
-        initialize: function(p) {
-          this.parent();
-          this.setOptions(p);
-        },
-        c: function() {}
-      });
+			// Testing Binds
+			setTimeout(function() {
+				c1.c();
+			}, 1000);
 
-      var x = new C({
-        bar: 'baz'
-      });
-
-      console.log(x);
-    });
-  </script>
+			console.log(c1);
+			console.log(a1 instanceof A);
+			console.log(b1 instanceof B);
+			console.log(c1 instanceof C);
+			console.log(b1 instanceof A);
+			console.log(c1 instanceof A);
+			console.log(c1 instanceof B);
+			console.log(a1 instanceof B);
+		});
+	</script>
 </head>
 <body>
 

@@ -165,7 +165,7 @@
             return true;
         }
 
-        var constructor = item.$constructor || item.constructor;
+        var constructor = item.constructor || item.prototype.constructor;
 
         while (constructor) {
             if (constructor === object) {
@@ -351,7 +351,7 @@
     Function.implement({
 
         /**
-         * Hide a function from being visible.
+         * Hide a function from being being overwritten in the prototype.
          *
          * @returns {*}
          */
@@ -448,13 +448,9 @@
         }
 
         object.extend(this);
-        object.$constructor = Type;
-        object.prototype.$constructor = object;
 
         return object;
     }
-
-    this.Type = Type;
 
     /**
      * Static function for verifying that a type object is enumerable.
@@ -465,6 +461,8 @@
     Type.isEnumerable = function(item) {
         return (item && typeof item.length === 'number' && Object.prototype.toString.call(item) !== '[object Function]');
     };
+
+    this.Type = Type;
 
     /**
      * Works like `Function.implement()` but only used to set methods.

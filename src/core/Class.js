@@ -15,6 +15,7 @@
      * @constructor
      */
     var Class = new Type('Class', function(params) {
+
         // Accept a function as an initializer
         if (instanceOf(params, Function)) {
             params = {
@@ -27,41 +28,25 @@
             Object.reset(this);
 
             if (newClass.$prototyping) {
-                delete newClass.$prototyping;
-
                 return this;
             }
 
-            /* VERIFY
             this.$caller = null;
 
             var value = this.initialize ? this.initialize.apply(this, arguments) : this;
 
-            this.$caller = this.caller = null;
+            this.$caller = null;
 
-            return value;*/
-
-            if (this.initialize) {
-                this.initialize.apply(this, arguments);
-            }
-
-            return this;
+            return value;
         };
 
-        // Extend methods and properties
+        // Inherit methods and properties
         newClass.extend(this);
         newClass.implement(params);
-
-        // Define inheritance
-        newClass.$constructor = Class;
-        newClass.prototype.$constructor = newClass;
         newClass.prototype.parent = parent;
-        newClass.prototype.super = parent; // alias
 
         return newClass;
     });
-
-    Class.implement('implement', implement.overloadSetter());
 
     Class.Mutators = {
 
@@ -77,6 +62,8 @@
             parent.$prototyping = true;
 
             this.prototype = new parent();
+
+            delete parent.$prototyping;
         },
 
         /**
@@ -93,8 +80,40 @@
                     implement.call(this, key, instance[key], true);
                 }
             }, this);
+        },
+
+        /**
+         * Mutator that automatically binds specified methods in a class to the instance of the class.
+         * This method however only sets the Binds property to an array.
+         *
+         * @param {Array} binds
+         * @returns {Array}
+         */
+        Binds: function(binds) {
+            return Array.from(binds).concat(this.prototype.Binds || []);
         }
+
     };
+
+    Class.implement({
+
+        // Override the implement function to support class functionality
+        implement: implement.overloadSetter(),
+
+        /**
+         * Default initializer for classes.
+         * Will loop over any method names in the Binds mutator and bind the scope.
+         */
+        initialize: function() {
+            Array.from(this.Binds).forEach(function(name){
+                var original = this[name];
+
+                if (original) {
+                    this[name] = original.bind(this);
+                }
+            }, this);
+        }
+    });
 
     /**
      * Attempts to call a method on the parent class.
@@ -130,6 +149,7 @@
         if (Class.Mutators.hasOwnProperty(key)) {
             value = Class.Mutators[key].call(this, value);
 
+            // Allow binds to pass
             if (!value) {
                 return this;
             }
@@ -141,10 +161,8 @@
             }
 
             this.prototype[key] = retain ? value : wrap(this, key, value);
-
         } else {
             this.prototype[key] = value;
-            //Object.merge(this.prototype, { key: value }); // VERIFY
         }
 
         return this;
@@ -251,11 +269,31 @@
             this.clearChain();
 
             return this;
+        },
+
+        /**
+         * Injects pauses between chained events.
+         *
+         * @param {Number} duration
+         * @returns {Chain}
+         */
+        wait: function(duration){
+            return this.chain(function() {
+                this.callChain.delay(duration || 500, this);
+
+                return this;
+            }.bind(this));
         }
+
     });
 
     /*------------------------------------ Events ------------------------------------*/
 
+    /**
+     * A utility class that adds event management to the class layer.
+     *
+     * @type {Class}
+     */
     var Events = new Class({
 
         /** List of events grouped by type */
@@ -291,7 +329,7 @@
             var type;
 
             for (type in events) {
-                this.addEvent(type, events[type]);
+                this.addEvent(type, events[type], false);
             }
 
             return this;
@@ -406,6 +444,11 @@
 
     /*------------------------------------ Options ------------------------------------*/
 
+    /**
+     * A utility class that adds configurable options for class instances.
+     *
+     * @type {Class}
+     */
     var Options = new Class({
 
         /** Options object */
