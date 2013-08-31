@@ -10,7 +10,7 @@
 			var A = new Class({
 				name: 'a',
 				initialize: function () {
-					this.foo = 'bar';
+					console.log('a');
 				},
 				a: function () {
 				}
@@ -19,6 +19,10 @@
 				Extends: A,
 				Implements: [Chain, Options],
 				name: 'b',
+				initialize: function() {
+					console.log('b');
+					this.parent();
+				},
 				b: function () {
 				}
 			});
@@ -28,6 +32,7 @@
 				Binds: ['c'],
 				name: 'c',
 				initialize: function (p) {
+					console.log('c');
 					this.parent();
 					this.setOptions(p);
 				},
@@ -40,12 +45,15 @@
 			var b1 = new B();
 			var c1 = new C();
 
+			console.log(a1);
+			console.log(b1);
+			console.log(c1);
+
 			// Testing Binds
 			setTimeout(function() {
 				c1.c();
 			}, 1000);
 
-			console.log(c1);
 			console.log(a1 instanceof A);
 			console.log(b1 instanceof B);
 			console.log(c1 instanceof C);

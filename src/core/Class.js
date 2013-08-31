@@ -25,19 +25,17 @@
 
         // Instantiate a new class
         var newClass = function() {
-            Object.reset(this);
+            Object.reset(this); // TODO is this still needed?
 
             if (newClass.$prototyping) {
                 return this;
             }
 
-            this.$caller = null;
+            if (this.initialize) {
+                this.initialize.apply(this, arguments);
+            }
 
-            var value = this.initialize ? this.initialize.apply(this, arguments) : this;
-
-            this.$caller = null;
-
-            return value;
+            return this;
         };
 
         // Inherit methods and properties
@@ -187,16 +185,11 @@
                 throw new Error('The method "' + key + '" cannot be called.');
             }
 
-            var caller = this.caller,
-                current = this.$caller;
-
-            this.caller = current;
             this.$caller = wrapper;
 
             var result = method.apply(this, arguments);
 
-            this.$caller = current;
-            this.caller = caller;
+            delete this.$caller;
 
             return result;
         }.extend({
