@@ -171,4 +171,4 @@
         '46': 'delete', '13': 'enter'
     });
 
-}).bind(this);
+}).call(this);
