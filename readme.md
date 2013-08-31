@@ -9,7 +9,7 @@ Milk, a fork of the popular MooTools library which aims to refactor it for prime
 
 ### What's new? ###
 
-Milk will now require Lodash (or another equivalent library like Underscore, Sugar or Async) for prototype and utility functionality.
+Milk will now require Lo-Dash (or another equivalent library like Underscore or Sugar) for prototype and utility functionality.
 These vendors provide extensive compatibility, robust performance, and thorough unit test coverage. Why re-create the wheel?
 
 Besides the vendor requirement, the following new features can be found.
