@@ -27,7 +27,8 @@
     /** Native objects */
     var Function = this.Function, Array = this.Array, Object = this.Object,
         String = this.String, Date = this.Date, RegExp = this.RegExp,
-        Number = this.Number, Boolean = this.Boolean;
+        Number = this.Number, Boolean = this.Boolean, Error = this.Error,
+        Math = this.Math;
 
     /*------------------------------------ Vendors ------------------------------------*/
 
@@ -41,14 +42,7 @@
      *
      *                          Lodash              Underscore          Sugar
      *  Array
-     *      each(f, b)          each(a, f, b)       each(a, f, b)       each(f, ~, ~)
-     *      forEach(f, b)       forEach(a, f, b)    forEach(a, f, b)    forEach(f, b)
-     *      clone()             x                   x                   clone()                     !!!
-     *      every(f, b)         every(a, f, b)      every(a, f, b)      every(f, b)
-     *      filter(f, b)        filter(a, f, b)     filter(a, f, b)     filter(f, b)
-     *      indexOf(v, i)       indexOf(a, v, i)    indexOf(a, v, ~)    indexOf(v, i)
-     *      map(f, b)           map(a, f, b)        map(a, f, b)        map(f, b)
-     *      some(f, b)          some(a, f, b)       some(a, f, b)       some(f, b)
+     *      clone()             clone(a)            clone(a)            clone()                     !!!
      *      clean()             compact(a)          compact(a)          compact()
      *      invoke(s)           invoke(a, s, .)     invoke(a, s, .)     x
      *      associate(a)        object(a, a)        object(a, a)        zip(a)
@@ -66,18 +60,10 @@
      *      hexToRgb()          x                   x                   x
      *      rgbToHex()          x                   x                   x
      *  Object
-     *      each(o, f, b)       each(o, f, b)       each(o, f, b)       each(f, ~, ~)
-     *      forEach(o, f, b)    forEach(o, f, b)    forEach(o, f, b)    forEach(f, b)
      *      clone(o)            clone(o)            clone(o)            clone(o, ~)
      *      merge(o, .)         merge(o, ., f, b)   x                   merge(o, o, ~, ~)           !!!
      *      append(o)           assign(o, o)        extend(o, o)        x
      *      subset(o, k)        pick(o, f, b)       pick(o, k*)         select(o, k)
-     *      map(o, f, b)        map(o, f, b)        map(o, f, b)        map(f, b)
-     *      filter(o, f, b)     filter(o, f, b)     filter(o, f, b)     filter(f, b)
-     *      every(o, f, b)      every(o, f, b)      every(o, f, b)      every(f, b)
-     *      some(o, f, b)       some(o, f, b)       some(o, f, b)       some(f, b)
-     *      keys(o)             keys(o)             keys(o)             keys(o, f)
-     *      values(o)           values(o)           values(o)           values(o, f)
      *      getLength(o)        size(o)             size(o)             size(o)
      *      keyOf(o, v)         findKey(o, f, b)    x                   x
      *      contains(o, v)      contains(o, v, i)   contains(o, v, i)   x
@@ -89,11 +75,9 @@
      *      times(f, b)         times(i, f, b)      times(i, f, b)      times(f)
      *      toFloat()           x                   x                   x
      *      toInt()             x                   x                   x
-     *  Date
-     *      now()               x                   x                   now()
      *  Function
      *      bind(b)             bind(f, b, .)       bind(f, b, .)       bind(b, .)
-     *      pass(a, b)          compose(f, f)       compose(f, f)       x
+     *      pass(a, b)          x                   x                   x
      *      delay(i, b, a)      delay(f, i, ~)      delay(f, i, ~)      delay(i, .)                 !!!
      *      periodical(i, b, a) x                   x                   every(i, .)
      *      attempt(a, b)       x                   x                   x
@@ -348,6 +332,22 @@
         return this;
     }.overloadSetter();
 
+    /**
+     * Extends the object's prototype with new properties or methods only if it does not already exist.
+     *
+     * @type {Function}
+     * @param {String} key
+     * @param {*} {value}
+     * @returns {self}
+     */
+    Function.prototype.polyfill = function(key, value) {
+        if (!this.prototype[key]) {
+            this.implement(key, value);
+        }
+
+        return this;
+    }.overloadSetter();
+
     Function.implement({
 
         /**
@@ -387,7 +387,7 @@
                 }
             });
 
-            return methods;
+            return methods.sort();
         },
 
         /**
@@ -404,12 +404,9 @@
                 }
             });
 
-            return props;
+            return props.sort();
         }
     });
-
-    // Set for object since it doesn't extend function
-    Object.extend = extend.overloadSetter();
 
     /*------------------------------------ Types ------------------------------------*/
 
@@ -537,7 +534,9 @@
      * @returns {self}
      */
     function alias(name, existing) {
-        implement.call(this, name, this.prototype[existing]);
+        if (!this.prototype[name] && this.prototype[existing]) {
+            implement.call(this, name, this.prototype[existing]);
+        }
 
         return this;
     }
@@ -581,6 +580,7 @@
     new Type('RegExp', RegExp);
     new Type('Date', Date);
     new Type('Boolean', Boolean);
+    new Type('Error', Error);
 
     // Create object-less types
     new Type('Object');
@@ -588,6 +588,7 @@
     new Type('TextNode');
     new Type('Collection');
     new Type('Arguments');
+    new Type('Math');
 
     // Mirror functions to the window and doc objects
     Window.mirror(function(name, method){
@@ -599,111 +600,6 @@
     });
 
     /*------------------------------------ Polyfills ------------------------------------*/
-
-    /**
-     * Convert the passed value to a function if it is not one.
-     *
-     * @param {*} item
-     * @returns {Function}
-     */
-    Function.from = function(item) {
-        return (typeof item === 'function') ? item : function() {
-            return item;
-        };
-    };
-
-    /**
-     * Convert the passed value to an array if it is not one.
-     *
-     * @param {*} item
-     * @returns {Array}
-     */
-    Array.from = function(item) {
-        if (!item) {
-            return [];
-        }
-
-        var type = typeOf(item);
-
-        if (type !== 'string' && Type.isEnumerable(item)) {
-            return (type === 'array') ? item : Array.prototype.slice.call(item)
-        }
-
-        return [item];
-    };
-
-    Array.implement({
-
-        clone: function() {
-            var i = this.length, clone = new Array(i), value;
-
-            while (i--) {
-                value = this[0];
-
-                switch (typeOf(value)) {
-                    case 'array':
-                        value = value.clone();
-                    break;
-                    case 'object':
-                        value = Object.clone(value);
-                    break;
-                }
-
-                clone[i] = value;
-            }
-
-            return clone;
-        }
-
-    });
-
-    /**
-     * Convert the passed value to a number if it is not one.
-     *
-     * @param {*} item
-     * @returns {Number}
-     */
-    Number.from = function(item) {
-        var number = parseFloat(item);
-
-        return isFinite(number) ? number : null;
-    };
-
-    /**
-     * Convert the passed value to a string if it is not one.
-     *
-     * @param {*} item
-     * @returns {String}
-     */
-    String.from = function(item) {
-        return item + '';
-    };
-
-    Object.extend({
-
-        reset: function(object) {
-            var key, value;
-
-            for (key in object) {
-                value = object[key];
-
-                switch (typeOf(value)) {
-                    case 'object':
-                        var F = function() {};
-                            F.prototype = value;
-
-                        object[key] = Object.reset(new F());
-                    break;
-                    case 'array':
-                        object[key] = value.clone();
-                    break;
-                }
-            }
-
-            return object;
-        }
-
-    });
 
     // Extend native objects if lodash or underscore exist
     var vendor = this._ || this.lodash || this.underscore || null;
@@ -730,7 +626,7 @@
                 ['times']
             ], [
                 [Array, Object, String, Number],
-                ['isEmpty', 'isEqual', 'isUndefined', 'isNull', 'toString', 'valueOf']
+                ['isEmpty', 'isEqual', 'isUndefined', 'isNull', 'toString', 'valueOf', 'clone']
             ]
         ];
 
@@ -772,4 +668,257 @@
             }
         }
     }
+
+    /*------------------------------------ Functions ------------------------------------*/
+
+     /**
+     * Convert the passed value to a function if it is not one.
+     *
+     * @param {*} item
+     * @returns {Function}
+     */
+    Function.from = function(item) {
+        return (typeof item === 'function') ? item : function() {
+            return item;
+        };
+    };
+
+    // Legacy and compatibility
+    Function.alias({
+        uniqueID: 'uniqueId'
+    });
+
+    /*------------------------------------ Arrays ------------------------------------*/
+
+    /**
+     * Convert the passed value to an array if it is not one.
+     *
+     * @param {*} item
+     * @returns {Array}
+     */
+    Array.from = function(item) {
+        if (!item) {
+            return [];
+        }
+
+        var type = typeOf(item);
+
+        if (type !== 'string' && Type.isEnumerable(item)) {
+            return (type === 'array') ? item : Array.prototype.slice.call(item)
+        }
+
+        return [item];
+    };
+
+    // Legacy and compatibility
+    Array.alias({
+        clean: 'compact',
+        associate: 'object',
+        object: 'zip',
+        append: 'union',
+        getLast: 'last',
+        combine: 'union'
+    });
+
+    /*------------------------------------ Numbers ------------------------------------*/
+
+    /**
+     * Convert the passed value to a number if it is not one.
+     *
+     * @param {*} item
+     * @returns {Number}
+     */
+    Number.from = function(item) {
+        var number = parseFloat(item);
+
+        return isFinite(number) ? number : null;
+    };
+
+    Number.polyfill({
+
+        /**
+         * Limit the number between a minimum and maximum boundary.
+         *
+         * @param {Number} min
+         * @param {Number} max
+         * @returns {Number}
+         */
+        limit: function(min, max) {
+            return Math.min(max, Math.max(min, this));
+        },
+
+        /**
+         * Round the number using a precision.
+         *
+         * @param {Number} precision
+         * @returns {Number}
+         */
+        round: function(precision) {
+            precision = Math.pow(10, precision || 0).toFixed(precision < 0 ? -precision : 0);
+
+            return Math.round(this * precision) / precision;
+        },
+
+        /**
+         * Trigger a function to execute equal to the size of the number.
+         *
+         * @param {Function} fn
+         * @param {Function} bind
+         * @returns {Number}
+         */
+        times: function(fn, bind) {
+            for (var i = 0; i < this; i++) {
+                fn.call(bind, i, this);
+            }
+
+            return this;
+        },
+
+        /**
+         * Convert the number to a float.
+         *
+         * @returns {Number}
+         */
+        toFloat: function() {
+            return parseFloat(this);
+        },
+
+        /**
+         * Convert the float or number to a number using the defined base.
+         *
+         * @param {Number} base
+         * @returns {Number}
+         */
+        toInt: function(base) {
+            return parseInt(this, base || 10);
+        }
+
+    });
+
+    // Apply Match functions to the Number type
+    ['abs', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'exp', 'floor', 'log', 'max', 'min', 'pow', 'sin', 'sqrt', 'tan'].forEach(function(method) {
+        if (!Number[method]) {
+            Number.implement(method, function() {
+                return Math[method].apply(null, [this].concat(Array.from(arguments)));
+            });
+        }
+    });
+
+    // Legacy and compatibility
+    Number.alias({
+        limit: 'clamp'
+    });
+
+    /*------------------------------------ Strings ------------------------------------*/
+
+    /**
+     * Convert the passed value to a string if it is not one.
+     *
+     * @param {*} item
+     * @returns {String}
+     */
+    String.from = function(item) {
+        return item + '';
+    };
+
+    /*------------------------------------ Objects ------------------------------------*/
+
+    Object.extend = extend.overloadSetter();
+
+    Object.alias = function(name, existing) {
+        if (!this[name] && this[existing]) {
+            this.extend(name, this[existing]);
+        }
+    }.overloadSetter();
+
+    Object.polyfill = function(key, value) {
+        if (!this[key]) {
+            this.extend(key, value);
+        }
+    }.overloadSetter();
+
+    Object.extend({
+
+        /**
+         * Reset an object by un-linking any references between objects and arrays.
+         * Basically, child objects and arrays will by pseudo cloned.
+         *
+         * @param {Object} object
+         * @returns {Object}
+         */
+        reset: function(object) {
+            var key, value;
+
+            for (key in object) {
+                value = object[key];
+
+                switch (typeOf(value)) {
+                    case 'object':
+                        var F = function() {};
+                            F.prototype = value;
+
+                        object[key] = Object.reset(new F());
+                    break;
+                    case 'array':
+                        object[key] = value.clone();
+                    break;
+                }
+            }
+
+            return object;
+        },
+        /**
+         * Convert an object to an HTTP query string.
+         * Will take into account nested objects and arrays.
+         *
+         * @param {Object} object
+         * @param {String} base
+         * @returns {String}
+         */
+        toQueryString: function(object, base) {
+            var queryString = [];
+
+            Object.forEach(object, function(value, key) {
+                if (base) {
+                    key = base + '[' + key + ']';
+                }
+
+                var result;
+
+                switch (typeOf(value)){
+                    case 'object':
+                        result = Object.toQueryString(value, key);
+                    break;
+                    case 'array':
+                        var qs = {};
+
+                        value.forEach(function(val, i){
+                            qs[i] = val;
+                        });
+
+                        result = Object.toQueryString(qs, key);
+                    break;
+                    default:
+                        result = key + '=' + encodeURIComponent(value);
+                    break;
+                }
+
+                if (value != null) {
+                    queryString.push(result);
+                }
+            });
+
+            return queryString.join('&');
+        }
+
+    });
+
+    // Legacy and compatibility
+    Object.alias({
+        append: 'assign',
+        subset: 'pick',
+        getLength: 'size',
+        keyOf: 'findKey'
+    });
+
 }).call(this);
