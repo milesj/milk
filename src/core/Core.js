@@ -111,7 +111,7 @@
             return 'null';
 
         } else if (item.$family) {
-            return item.$family;
+            return item.$family();
 
         } else if (item.nodeName) {
             if (item.nodeType === 1) {
@@ -348,66 +348,6 @@
         return this;
     }.overloadSetter();
 
-    Function.implement({
-
-        /**
-         * Hide a function from being being overwritten in the prototype.
-         *
-         * @returns {*}
-         */
-        hide: function() {
-            this.$hidden = true;
-
-            return this;
-        },
-
-        /**
-         * Protect a function from being called publicly.
-         * Can only be called within the class or object itself.
-         *
-         * @returns {*}
-         */
-        protect: function() {
-            this.$protected = true;
-
-            return this;
-        },
-
-        /**
-         * Return all the direct method names for this current object.
-         *
-         * @returns {Array}
-         */
-        methods: function() {
-            var methods = [], self = this;
-
-            Object.getOwnPropertyNames(this).forEach(function(prop) {
-                if (typeof self[prop] === 'function') {
-                    methods.push(prop);
-                }
-            });
-
-            return methods.sort();
-        },
-
-        /**
-         * Return all the direct property names for this current object.
-         *
-         * @returns {Array}
-         */
-        properties: function() {
-            var props = [], self = this;
-
-            Object.getOwnPropertyNames(this).forEach(function(prop) {
-                if (typeof self[prop] !== 'function') {
-                    props.push(prop);
-                }
-            });
-
-            return props.sort();
-        }
-    });
-
     /*------------------------------------ Types ------------------------------------*/
 
     /**
@@ -430,12 +370,14 @@
             // Store the family so it can be reflected
             if (object) {
                 object.prototype.$family = (function() {
-                    if (name === 'Number') {
-                        // Fix issues with NaN
-                        return isFinite(this) ? 'number' : 'null';
-                    }
+                    return function() {
+                        if (name === 'Number') {
+                            // Fix issues with NaN
+                            return isFinite(this) ? 'number' : 'null';
+                        }
 
-                    return lowerName;
+                        return lowerName;
+                    };
                 })();
             }
         }
@@ -682,6 +624,66 @@
             return item;
         };
     };
+
+    Function.implement({
+
+        /**
+         * Hide a function from being being overwritten in the prototype.
+         *
+         * @returns {*}
+         */
+        hide: function() {
+            this.$hidden = true;
+
+            return this;
+        },
+
+        /**
+         * Protect a function from being called publicly.
+         * Can only be called within the class or object itself.
+         *
+         * @returns {*}
+         */
+        protect: function() {
+            this.$protected = true;
+
+            return this;
+        },
+
+        /**
+         * Return all the direct method names for this current object.
+         *
+         * @returns {Array}
+         */
+        methods: function() {
+            var methods = [], self = this;
+
+            Object.getOwnPropertyNames(this).forEach(function(prop) {
+                if (typeof self[prop] === 'function') {
+                    methods.push(prop);
+                }
+            });
+
+            return methods.sort();
+        },
+
+        /**
+         * Return all the direct property names for this current object.
+         *
+         * @returns {Array}
+         */
+        properties: function() {
+            var props = [], self = this;
+
+            Object.getOwnPropertyNames(this).forEach(function(prop) {
+                if (typeof self[prop] !== 'function') {
+                    props.push(prop);
+                }
+            });
+
+            return props.sort();
+        }
+    });
 
     // Legacy and compatibility
     Function.alias({
