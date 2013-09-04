@@ -5,6 +5,40 @@ suite('Polyfill', function() {
 
     });
 
+    suite('Function', function() {
+        suite('pass', function() {
+            var foo = function() {
+                var result = '';
+
+                for (var i = 0, l = arguments.length; i < l; i++) {
+                    if (typeOf(arguments[i]) === 'array') {
+                        result += arguments[i].join('-');
+                    } else {
+                        result += arguments[i];
+                    }
+                }
+
+                return result;
+            };
+
+            var bar = foo.pass('hello');
+            var baz = foo.pass([['peach', 'apply', 'orange']]);
+
+            test('should pass arguments to pseudo-function', function() {
+                assert.equal(bar(), 'hello');
+                assert.equal(baz(), 'peach-apply-orange');
+            });
+        });
+
+        suite('delay', function() {
+
+        });
+
+        suite('periodical', function() {
+
+        });
+    });
+
     suite('Array', function() {
         suite('append', function() {
             test('should add to the end', function() {
@@ -217,33 +251,54 @@ suite('Polyfill', function() {
     });
 
     suite('Number', function() {
-
-        suite('from', function() {
-
-        });
-
         suite('limit', function() {
-
+            test('should limit between min and max', function() {
+                assert.equal((12).limit(2, 6.5), 6.5);
+                assert.equal((-4).limit(2, 6.5), 2);
+                assert.equal((4.3).limit(2, 6.5), 4.3);
+            });
         });
 
         suite('round', function() {
-
+            test('should round the number with optional precision', function() {
+                assert.equal((12.45).round(), 12);
+                assert.equal((12.45).round(1), 12.5);
+                assert.equal((12.45).round(-1), 10);
+            });
         });
 
         suite('times', function() {
+            test('should execute the function x times', function() {
+                var count = 0;
 
+                (4).times(function() {
+                    count += 2;
+                });
+
+                assert.equal(count, 8);
+            })
         });
 
         suite('toFloat', function() {
-
+            test('should convert int to float', function() {
+                assert.equal((111).toFloat(), 111);
+                assert.equal((111.1).toFloat(), 111.1);
+            });
         });
 
         suite('toInt', function() {
-
+            test('should convert float to int', function() {
+                assert.equal((111).toInt(), 111);
+                assert.equal((111.1).toInt(), 111);
+                assert.equal((111).toInt(2), 7);
+            });
         });
 
         suite('Math', function() {
-
+            test('should inherit Math methods', function() {
+                assert.equal((-1).abs(), 1);
+                assert.equal((3).pow(4), 81);
+            });
         });
     });
 

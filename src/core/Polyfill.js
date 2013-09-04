@@ -4,6 +4,53 @@
 
     /*------------------------------------ Functions ------------------------------------*/
 
+    Function.polyfill({
+
+        /**
+         * Returns a closure with arguments and bind scope for a existing function.
+         *
+         * @param {Array} args
+         * @param {Object} bind
+         * @returns {Function}
+         */
+        pass: function(args, bind) {
+            var self = this;
+
+            if (args != null) {
+                args = Array.from(args);
+            }
+
+            return function() {
+                return self.apply(bind, args || arguments);
+            };
+        },
+
+        /**
+         * Execute the function after specific milliseconds.
+         * Can optionally accept arguments and scope binding.
+         *
+         * @param {Number} delay
+         * @param {Object} bind
+         * @param {Array} args
+         * @returns {Object}
+         */
+        delay: function(delay, bind, args) {
+            return setTimeout(this.pass((!args ? [] : args), bind), delay);
+        },
+
+        /**
+         * Execute the function every specific millisecond interval.
+         *
+         * @param {Number} periodical
+         * @param {Object} bind
+         * @param {Array} args
+         * @returns {Object}
+         */
+        periodical: function(periodical, bind, args) {
+            return setInterval(this.pass((!args ? [] : args), bind), periodical);
+        }
+
+    });
 
     /*------------------------------------ Arrays ------------------------------------*/
 

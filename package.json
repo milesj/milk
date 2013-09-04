@@ -25,6 +25,7 @@
         "grunt-contrib-jshint": "*",
         "mocha": "*",
         "chai": "*",
+        "sinon": "*",
         "lodash": "*"
     }
 }
