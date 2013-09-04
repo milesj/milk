@@ -505,6 +505,7 @@
     Type.implement({
         implement: implement.overloadSetter(),
         extend: extend.overloadSetter(),
+        polyfill: Function.prototype.polyfill,
         alias: alias.overloadSetter(),
         mirror: mirror
     });
@@ -543,7 +544,7 @@
         document[name] = method;
     });
 
-    /*------------------------------------ Polyfills ------------------------------------*/
+    /*------------------------------------ Inherit ------------------------------------*/
 
     // Extend native objects if lodash or underscore exist
     var vendor = this._ || this.lodash || this.underscore || null;
@@ -552,10 +553,10 @@
         var mapping = [
             [
                 [Array],
-                ['compact', 'difference', 'drop', 'findIndex', 'first', 'flatten', 'head', 'indexOf', 'initial', 'intersection', 'last', 'lastIndexOf', 'range', 'rest', 'sortedIndex', 'tail', 'take', 'union', 'uniq', 'unique', 'unzip', 'without', 'zip']
+                ['compact', 'difference', 'drop', 'findIndex', 'first', 'flatten', 'head', 'indexOf', 'initial', 'intersection', 'last', 'lastIndexOf', 'range', 'rest', 'sortedIndex', 'tail', 'take', 'union', 'uniq', 'unique', 'unzip', 'without', 'zip', 'zipObject']
             ], [
                 [Array, Object, String],
-                ['all', 'any', 'at', 'collect', 'contains', 'countBy', 'detect', 'each', 'every', 'filter', 'find', 'findWhere', 'foldl', 'foldr', 'forEach', 'groupBy', 'include', 'inject', 'invoke', 'map', 'max', 'min', 'pluck', 'reduce', 'reduceRight', 'reject', 'select', 'shuffle', 'size', 'some', 'sortBy', 'toArray', 'where']
+                ['all', 'any', 'at', 'collect', 'contains', 'countBy', 'detect', 'each', 'every', 'filter', 'find', 'findWhere', 'foldl', 'foldr', 'forEach', 'groupBy', 'inject', 'invoke', 'map', 'max', 'min', 'pluck', 'reduce', 'reduceRight', 'reject', 'select', 'shuffle', 'size', 'some', 'sortBy', 'toArray', 'where']
             ], [
                 [Function],
                 ['bind', 'compose', 'createCallback', 'debounce', 'defer', 'delay', 'memoize', 'once', 'partial', 'partialRight', 'throttle']
@@ -615,7 +616,7 @@
 
     /*------------------------------------ Functions ------------------------------------*/
 
-     /**
+    /**
      * Convert the passed value to a function if it is not one.
      *
      * @param {*} item
@@ -632,7 +633,7 @@
         /**
          * Hide a function from being being overwritten in the prototype.
          *
-         * @returns {*}
+         * @returns {Function}
          */
         hide: function() {
             this.$hidden = true;
@@ -644,7 +645,7 @@
          * Protect a function from being called publicly.
          * Can only be called within the class or object itself.
          *
-         * @returns {*}
+         * @returns {Function}
          */
         protect: function() {
             this.$protected = true;
@@ -687,11 +688,6 @@
         }
     });
 
-    // Legacy and compatibility
-    Function.alias({
-        uniqueID: 'uniqueId'
-    });
-
     /*------------------------------------ Arrays ------------------------------------*/
 
     /**
@@ -714,16 +710,6 @@
         return [item];
     };
 
-    // Legacy and compatibility
-    Array.alias({
-        clean: 'compact',
-        associate: 'object',
-        object: 'zip',
-        append: 'union',
-        getLast: 'last',
-        combine: 'union'
-    });
-
     /*------------------------------------ Numbers ------------------------------------*/
 
     /**
@@ -738,79 +724,24 @@
         return isFinite(number) ? number : null;
     };
 
-    Number.polyfill({
+    /**
+     * Generate a random number between the minimum and maximum boundaries.
+     *
+     * @param {Number} min
+     * @param {Number} max
+     * @returns {Number}
+     */
+    Number.random = function(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    };
 
-        /**
-         * Limit the number between a minimum and maximum boundary.
-         *
-         * @param {Number} min
-         * @param {Number} max
-         * @returns {Number}
-         */
-        limit: function(min, max) {
-            return Math.min(max, Math.max(min, this));
-        },
-
-        /**
-         * Round the number using a precision.
-         *
-         * @param {Number} precision
-         * @returns {Number}
-         */
-        round: function(precision) {
-            precision = Math.pow(10, precision || 0).toFixed(precision < 0 ? -precision : 0);
-
-            return Math.round(this * precision) / precision;
-        },
-
-        /**
-         * Trigger a function to execute equal to the size of the number.
-         *
-         * @param {Function} fn
-         * @param {Function} bind
-         * @returns {Number}
-         */
-        times: function(fn, bind) {
-            for (var i = 0; i < this; i++) {
-                fn.call(bind, i, this);
-            }
-
-            return this;
-        },
-
-        /**
-         * Convert the number to a float.
-         *
-         * @returns {Number}
-         */
-        toFloat: function() {
-            return parseFloat(this);
-        },
-
-        /**
-         * Convert the float or number to a number using the defined base.
-         *
-         * @param {Number} base
-         * @returns {Number}
-         */
-        toInt: function(base) {
-            return parseInt(this, base || 10);
-        }
-
-    });
-
-    // Apply Match functions to the Number type
+    // Apply Math functions to the Number type
     ['abs', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'exp', 'floor', 'log', 'max', 'min', 'pow', 'sin', 'sqrt', 'tan'].forEach(function(method) {
         if (!Number[method]) {
             Number.implement(method, function() {
                 return Math[method].apply(null, [this].concat(Array.from(arguments)));
             });
         }
-    });
-
-    // Legacy and compatibility
-    Number.alias({
-        limit: 'clamp'
     });
 
     /*------------------------------------ Strings ------------------------------------*/
@@ -827,102 +758,33 @@
 
     /*------------------------------------ Objects ------------------------------------*/
 
+    // Set manually since Object doesn't inherit from Function
     Object.extend = extend.overloadSetter();
 
+    /**
+     * Works exactly like `Type.alias` except it doesn't modify the prototype.
+     *
+     * @type {Function}
+     * @param {String} name
+     * @param {String} existing
+     */
     Object.alias = function(name, existing) {
         if (!this[name] && this[existing]) {
             this.extend(name, this[existing]);
         }
     }.overloadSetter();
 
+    /**
+     * Works exactly like `Type.polyfill` except it doesn't modify the prototype.
+     *
+     * @type {Function}
+     * @param {String} name
+     * @param {Function} value
+     */
     Object.polyfill = function(key, value) {
         if (!this[key]) {
             this.extend(key, value);
         }
     }.overloadSetter();
-
-    Object.extend({
-
-        /**
-         * Reset an object by un-linking any references between objects and arrays.
-         * Basically, child objects and arrays will by pseudo cloned.
-         *
-         * @param {Object} object
-         * @returns {Object}
-         */
-        reset: function(object) {
-            var key, value;
-
-            for (key in object) {
-                value = object[key];
-
-                switch (typeOf(value)) {
-                    case 'object':
-                        var F = function() {};
-                            F.prototype = value;
-
-                        object[key] = Object.reset(new F());
-                    break;
-                    case 'array':
-                        object[key] = value.clone();
-                    break;
-                }
-            }
-
-            return object;
-        },
-        /**
-         * Convert an object to an HTTP query string.
-         * Will take into account nested objects and arrays.
-         *
-         * @param {Object} object
-         * @param {String} base
-         * @returns {String}
-         */
-        toQueryString: function(object, base) {
-            var queryString = [];
-
-            Object.forEach(object, function(value, key) {
-                if (base) {
-                    key = base + '[' + key + ']';
-                }
-
-                var result;
-
-                switch (typeOf(value)){
-                    case 'object':
-                        result = Object.toQueryString(value, key);
-                    break;
-                    case 'array':
-                        var qs = {};
-
-                        value.forEach(function(val, i){
-                            qs[i] = val;
-                        });
-
-                        result = Object.toQueryString(qs, key);
-                    break;
-                    default:
-                        result = key + '=' + encodeURIComponent(value);
-                    break;
-                }
-
-                if (value) {
-                    queryString.push(result);
-                }
-            });
-
-            return queryString.join('&');
-        }
-
-    });
-
-    // Legacy and compatibility
-    Object.alias({
-        append: 'assign',
-        subset: 'pick',
-        getLength: 'size',
-        keyOf: 'findKey'
-    });
 
 }).call(this);

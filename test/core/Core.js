@@ -1,9 +1,4 @@
-var assert = chai.assert,
-    Mock = function() {
-        this.data = {
-            foo: 'bar'
-        };
-    };
+var assert = chai.assert;
 
 suite('Core', function() {
     setup(function() {
@@ -112,126 +107,188 @@ suite('Core', function() {
         });
     });
 
-    suite('Function.overloadSetter', function() {
-        Mock.prototype.set = function(key, value) {
-            this.data[key] = value;
-        }.overloadSetter();
-
-        Mock.prototype.setForce = function(key, value) {
-            this.data[key] = value;
-        }.overloadSetter(true);
-
-        var obj = new Mock();
-
-        test('set single', function() {
-            obj.set('key', 'value');
-
-            assert.equal(obj.data.key, 'value');
-            assert.deepEqual(obj.data, {
-                foo: 'bar',
-                key: 'value'
-            });
-        });
-        test('set multiple', function() {
-            obj.set({
-                foo: 'baz',
-                key: 'var'
-            });
-
-            assert.deepEqual(obj.data, {
-                foo: 'baz',
-                key: 'var'
-            });
-        });
-        test('set with force object', function() {
-            obj.setForce({
-                moo: 'milk'
-            });
-
-            assert.deepEqual(obj.data, {
-                foo: 'baz',
-                key: 'var',
-                moo: 'milk'
-            });
-        });
-    });
-
-    suite('Function.overloadGetter', function() {
-        Mock.prototype.get = function(key) {
-            return this.data[key] || null;
-        }.overloadGetter();
-
-        Mock.prototype.getForce = function(key) {
-            return this.data[key] || null;
-        }.overloadGetter(true);
-
-        var obj = new Mock();
-
-        test('get single', function() {
-            assert.equal(obj.get('foo'), 'bar');
-            assert.equal(obj.get('key'), null);
-        });
-        test('get multiple', function() {
-            obj.data.moo = 'milk';
-
-            assert.deepEqual(obj.get(['foo', 'key', 'moo']), {
-                foo: 'bar',
-                key: null,
-                moo: 'milk'
-            });
-        });
-        test('get with force array', function() {
-            assert.deepEqual(obj.getForce('foo'), {
+    suite('Function', function() {
+        var Mock = function() {
+            this.data = {
                 foo: 'bar'
+            };
+        };
+
+        suite('overloadSetter', function() {
+            Mock.prototype.set = function(key, value) {
+                this.data[key] = value;
+            }.overloadSetter();
+
+            Mock.prototype.setForce = function(key, value) {
+                this.data[key] = value;
+            }.overloadSetter(true);
+
+            var obj = new Mock();
+
+            test('set single', function() {
+                obj.set('key', 'value');
+
+                assert.equal(obj.data.key, 'value');
+                assert.deepEqual(obj.data, {
+                    foo: 'bar',
+                    key: 'value'
+                });
             });
+            test('set multiple', function() {
+                obj.set({
+                    foo: 'baz',
+                    key: 'var'
+                });
+
+                assert.deepEqual(obj.data, {
+                    foo: 'baz',
+                    key: 'var'
+                });
+            });
+            test('set with force object', function() {
+                obj.setForce({
+                    moo: 'milk'
+                });
+
+                assert.deepEqual(obj.data, {
+                    foo: 'baz',
+                    key: 'var',
+                    moo: 'milk'
+                });
+            });
+        });
+
+        suite('overloadGetter', function() {
+            Mock.prototype.get = function(key) {
+                return this.data[key] || null;
+            }.overloadGetter();
+
+            Mock.prototype.getForce = function(key) {
+                return this.data[key] || null;
+            }.overloadGetter(true);
+
+            var obj = new Mock();
+
+            test('get single', function() {
+                assert.equal(obj.get('foo'), 'bar');
+                assert.equal(obj.get('key'), null);
+            });
+            test('get multiple', function() {
+                obj.data.moo = 'milk';
+
+                assert.deepEqual(obj.get(['foo', 'key', 'moo']), {
+                    foo: 'bar',
+                    key: null,
+                    moo: 'milk'
+                });
+            });
+            test('get with force array', function() {
+                assert.deepEqual(obj.getForce('foo'), {
+                    foo: 'bar'
+                });
+            });
+        });
+
+        suite('extend', function() {
+            test('static extension', function() {
+                assert.isUndefined(Mock.testProperty);
+                assert.isUndefined(Mock.testMethod);
+
+                Mock.extend({
+                    testProperty: 'foo',
+                    testMethod: function() {}
+                });
+
+                assert.isString(Mock.testProperty);
+                assert.isFunction(Mock.testMethod);
+            });
+        });
+
+        suite('implement', function() {
+            test('prototype extension', function() {
+                assert.isUndefined(Mock.prototype.protoProperty);
+                assert.isUndefined(Mock.prototype.protoMethod);
+
+                Mock.implement({
+                    protoProperty: 'foo',
+                    protoMethod: function() {}
+                });
+
+                assert.isString(Mock.prototype.protoProperty);
+                assert.isFunction(Mock.prototype.protoMethod);
+            });
+        });
+
+        suite('polyfill', function() {
+            test('prototype polyfill', function() {
+                var oldMethod = Mock.prototype.polyMethod = function() {},
+                    newMethod = function() { return 1; };
+
+                assert.isUndefined(Mock.prototype.polyProperty);
+                assert.isFunction(Mock.prototype.polyMethod);
+
+                Mock.polyfill({
+                    polyProperty: 'foo',
+                    polyMethod: newMethod
+                });
+
+                assert.isString(Mock.prototype.polyProperty);
+                assert.strictEqual(Mock.prototype.polyMethod, oldMethod);
+            });
+        });
+
+        suite('hide', function() {
+
+        });
+
+        suite('protect', function() {
+
+        });
+
+        suite('methods', function() {
+
+        });
+
+        suite('properties', function() {
+
         });
     });
 
-    suite('Function.extend', function() {
-        test('static extension', function() {
-            assert.isUndefined(Mock.testProperty);
-            assert.isUndefined(Mock.testMethod);
+    suite('Type', function() {
 
-            Mock.extend({
-                testProperty: 'foo',
-                testMethod: function() {}
-            });
+        suite('isEnumerable', function() {
 
-            assert.isString(Mock.testProperty);
-            assert.isFunction(Mock.testMethod);
+        });
+
+        suite('extend', function() {
+
+        });
+
+        suite('implement', function() {
+
+        });
+
+        suite('alias', function() {
+
+        });
+
+        suite('mirror', function() {
+
+        });
+
+        suite('is*', function() {
+
         });
     });
 
-    suite('Function.implement', function() {
-        test('prototype extension', function() {
-            assert.isUndefined(Mock.prototype.protoProperty);
-            assert.isUndefined(Mock.prototype.protoMethod);
-
-            Mock.implement({
-                protoProperty: 'foo',
-                protoMethod: function() {}
+    suite('Types', function() {
+        suite('Array.from', function() {
+            test('should return an array', function() {
+                assert.deepEqual(Array.from(1), [1]);
+                assert.deepEqual(Array.from('abc'), ['abc']);
+                assert.deepEqual(Array.from(true), [true]);
+                assert.deepEqual(Array.from(['foo']), ['foo']);
             });
-
-            assert.isString(Mock.prototype.protoProperty);
-            assert.isFunction(Mock.prototype.protoMethod);
-        });
-    });
-
-    suite('Function.polyfill', function() {
-        test('prototype polyfill', function() {
-            var oldMethod = Mock.prototype.polyMethod = function() {},
-                newMethod = function() { return 1; };
-
-            assert.isUndefined(Mock.prototype.polyProperty);
-            assert.isFunction(Mock.prototype.polyMethod);
-
-            Mock.polyfill({
-                polyProperty: 'foo',
-                polyMethod: newMethod
-            });
-
-            assert.isString(Mock.prototype.polyProperty);
-            assert.strictEqual(Mock.prototype.polyMethod, oldMethod);
         });
     });
 });
