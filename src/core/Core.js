@@ -549,17 +549,21 @@
 
     /*------------------------------------ Functions ------------------------------------*/
 
-    /**
-     * Convert the passed value to a function if it is not one.
-     *
-     * @param {*} item
-     * @returns {Function}
-     */
-    Function.from = function(item) {
-        return (typeof item === 'function') ? item : function() {
-            return item;
-        };
-    };
+    Function.extend({
+
+        /**
+         * Convert the passed value to a function if it is not one.
+         *
+         * @param {*} item
+         * @returns {Function}
+         */
+        from: function(item) {
+            return (typeof item === 'function') ? item : function() {
+                return item;
+            };
+        }
+
+    });
 
     Function.implement({
 
@@ -623,50 +627,58 @@
 
     /*------------------------------------ Arrays ------------------------------------*/
 
-    /**
-     * Convert the passed value to an array if it is not one.
-     *
-     * @param {*} item
-     * @returns {Array}
-     */
-    Array.from = function(item) {
-        if (!item) {
-            return [];
+    Array.extend({
+
+        /**
+         * Convert the passed value to an array if it is not one.
+         *
+         * @param {*} item
+         * @returns {Array}
+         */
+        from: function(item) {
+            if (!item) {
+                return [];
+            }
+
+            var type = typeOf(item);
+
+            if (type !== 'string' && Type.isEnumerable(item)) {
+                return (type === 'array') ? item : Array.prototype.slice.call(item);
+            }
+
+            return [item];
         }
 
-        var type = typeOf(item);
-
-        if (type !== 'string' && Type.isEnumerable(item)) {
-            return (type === 'array') ? item : Array.prototype.slice.call(item);
-        }
-
-        return [item];
-    };
+    });
 
     /*------------------------------------ Numbers ------------------------------------*/
 
-    /**
-     * Convert the passed value to a number if it is not one.
-     *
-     * @param {*} item
-     * @returns {Number}
-     */
-    Number.from = function(item) {
-        var number = parseFloat(item);
+    Number.extend({
 
-        return isFinite(number) ? number : null;
-    };
+        /**
+         * Convert the passed value to a number if it is not one.
+         *
+         * @param {*} item
+         * @returns {Number}
+         */
+        from: function(item) {
+            var number = parseFloat(item);
 
-    /**
-     * Generate a random number between the minimum and maximum boundaries.
-     *
-     * @param {Number} min
-     * @param {Number} max
-     * @returns {Number}
-     */
-    Number.random = function(min, max) {
-        return Math.floor(Math.random() * (max - min + 1) + min);
-    };
+            return isFinite(number) ? number : null;
+        },
+
+        /**
+         * Generate a random number between the minimum and maximum boundaries.
+         *
+         * @param {Number} min
+         * @param {Number} max
+         * @returns {Number}
+         */
+        random: function(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+    });
 
     // Apply Math functions to the Number type
     ['abs', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'exp', 'floor', 'log', 'max', 'min', 'pow', 'sin', 'sqrt', 'tan'].forEach(function(method) {
@@ -679,15 +691,30 @@
 
     /*------------------------------------ Strings ------------------------------------*/
 
-    /**
-     * Convert the passed value to a string if it is not one.
-     *
-     * @param {*} item
-     * @returns {String}
-     */
-    String.from = function(item) {
-        return item + '';
-    };
+    String.extend({
+
+        /**
+         * Convert the passed value to a string if it is not one.
+         *
+         * @param {*} item
+         * @returns {String}
+         */
+        from: function(item) {
+            return item + '';
+        },
+
+        /**
+         * Generate a random unique identifier.
+         *
+         * @returns {String}
+         */
+        uniqueID: vendor.uniqueId || function() {
+            var UID = Date.now();
+
+            return (UID++).toString(36);
+        }
+
+    });
 
     /*------------------------------------ Objects ------------------------------------*/
 

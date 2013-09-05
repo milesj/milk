@@ -6,11 +6,13 @@
 	<link href="../node_modules/mocha/mocha.css" rel="stylesheet">
 	<script src="../node_modules/mocha/mocha.js"></script>
 	<script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/sinon/pkg/sinon-timers-1.7.3.js"></script>
 	<script src="../node_modules/lodash/dist/lodash.min.js"></script>
 	<script>mocha.setup('tdd');</script>
 
 	<script src="../src/core/Core.js"></script>
-	<script src="core/Core.js"></script>
+  <script src="../src/core/Polyfill.js"></script>
+  <script src="core/Polyfill.js"></script>
 </head>
 <body>
 	<div id="mocha"></div>
