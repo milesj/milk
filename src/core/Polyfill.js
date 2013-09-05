@@ -1,6 +1,74 @@
 // TODO
 
 (function() {
+    this.Milk.polyfill = true;
+
+    /**
+     * Mapping of functions in Milk that need to be required in vendors.
+     * Will need to polyfill any missing functions.
+     * EMS5 methods are not being reproduced as it will use built-ins.
+     *
+     * Argument Legend:
+     *  a = array, f = function, b = scope bind, i = integer, s = string, o = object,
+     *  k = key, v = value, ~ = boolean or random arg, . = repeating arg
+     *
+     *                          Lodash              Underscore          Sugar
+     *  Array
+     *      clone()             clone(a)            clone(a)            clone()
+     *      clean()             compact(a)          compact(a)          compact()
+     *      invoke(s)           invoke(a, s, .)     invoke(a, s, .)     x
+     *      associate(a)        object(a, a)        object(a, a)        zip(a)
+     *      link(o)             x                   x                   x
+     *      contains(v, i)      contains(a, v, i)   contains(a, v)      x
+     *      append(a)           union(a, a)         union(a, a)         add(v)
+     *      getLast()           last()              last()              last(i)
+     *      getRandom()         x                   x                   sample(i)
+     *      include(v)          include(a, v, i)    include(a, v, i)    x
+     *      combine(a)          union(a, a)         union(a, a)         union(a)
+     *      erase(v)            x                   x                   remove()
+     *      empty()             x                   x                   x
+     *      flatten()           flatten(a, ~, f, b) flatten(a, ~)       flatten(i)
+     *      pick()              x                   x                   x
+     *      hexToRgb()          x                   x                   x
+     *      rgbToHex()          x                   x                   x
+     *  Object
+     *      clone(o)            clone(o)            clone(o)            clone(o, ~)
+     *      merge(o, .)         merge(o, ., f, b)   x                   merge(o, o, ~, ~)
+     *      append(o)           assign(o, o)        extend(o, o)        x
+     *      subset(o, k)        pick(o, f, b)       pick(o, k*)         select(o, k)
+     *      getLength(o)        size(o)             size(o)             size(o)
+     *      keyOf(o, v)         findKey(o, f, b)    x                   x
+     *      contains(o, v)      contains(o, v, i)   contains(o, v, i)   x
+     *      toQueryString(o, ~) x                   x                   toQueryString(o, ~)
+     *  Number
+     *      random(min, max)    random(min, max)    random(min, max)    random(min, max)
+     *      limit(min, max)     x                   x                   clamp(min, max)
+     *      round(i)            x                   x                   round(i)
+     *      times(f, b)         times(i, f, b)      times(i, f, b)      times(f)
+     *      toFloat()           x                   x                   x
+     *      toInt()             x                   x                   x
+     *  Function
+     *      bind(b)             bind(f, b, .)       bind(f, b, .)       bind(b, .)
+     *      pass(a, b)          x                   x                   x
+     *      delay(i, b, a)      delay(f, i, ~)      delay(f, i, ~)      delay(i, .)
+     *      periodical(i, b, a) x                   x                   every(i, .)
+     *      attempt(a, b)       x                   x                   x
+     *  String
+     *      contains(v, i)      contains(s, v, i)   contains(s, v, i)   has(v)
+     *      test(r, p)          x                   x                   x
+     *      trim()              x                   x                   x
+     *      clean()             x                   x                   compact()
+     *      camelCase()         x                   x                   camelize()
+     *      hyphenate()         x                   x                   dasherize()
+     *      capitalize()        x                   x                   capitalize()
+     *      escapeRegExp()      x                   x                   escapeRegExp()
+     *      toInt()             x                   x                   toNumber()
+     *      toFloat()           x                   x                   toFloat()
+     *      hexToRgb()          x                   x                   x
+     *      rgbToHex()          x                   x                   x
+     *      substitute()        x                   x                   assign(.)
+     *      uniqueID()          uniqueId(s)         uniqueId(s)         x
+     */
 
     /*------------------------------------ Functions ------------------------------------*/
 
@@ -16,7 +84,7 @@
         pass: function(args, bind) {
             var self = this;
 
-            if (args != null) {
+            if (args !== null) {
                 args = Array.from(args);
             }
 
@@ -88,7 +156,7 @@
          */
         clean: function() {
             return this.filter(function(item) {
-                return (item != null);
+                return (typeOf(item) !== 'null');
             });
         },
 
@@ -150,7 +218,7 @@
          */
         pick: function() {
             for (var i = 0, l = this.length; i < l; i++) {
-                if (this[i] != null) {
+                if (this[i] !== null) {
                     return this[i];
                 }
             }
@@ -261,7 +329,128 @@
 
     /*------------------------------------ Objects ------------------------------------*/
 
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+
     Object.polyfill({
+
+        /**
+         * Clean all null or empty values from the object.
+         * If a function is provided, use that for filtering.
+         *
+         * @param {Object} object
+         * @param {Function} method
+         * @returns {Object}
+         */
+        cleanValues: function(object, method) {
+            method = method || function(value) {
+                return (typeOf(value) !== 'null');
+            };
+
+            for (var key in object) {
+                if (!method(object[key])) {
+                    delete object[key];
+                }
+            }
+
+            return object;
+        },
+
+        /**
+         * Remove a property from the object as long as it's not inherited.
+         *
+         * @param {Object} object
+         * @param {String} key
+         * @returns {Object}
+         */
+        erase: function(object, key) {
+            if (hasOwnProperty.call(object, key)) {
+                delete object[key];
+            }
+
+            return object;
+        },
+
+        /**
+         * Filter values using the callback function and return a new object containing the filtered values.
+         *
+         * @param {Object} object
+         * @param {Function} fn
+         * @param {Function} bind
+         * @returns {Object}
+         */
+        filter: function(object, fn, bind) {
+            var results = {};
+
+            for (var key in object) {
+                var value = object[key];
+
+                if (hasOwnProperty.call(object, key) && fn.call(bind, value, key, object)) {
+                    results[key] = value;
+                }
+            }
+
+            return results;
+        },
+
+        /**
+         * Return a value from an object using a dot notated or array path.
+         *
+         * @param {Object} source
+         * @param {String|array} parts
+         * @returns {*}
+         */
+        getFromPath: function(source, parts) {
+            if (typeof parts === 'string') {
+                parts = parts.split('.');
+            }
+
+            for (var i = 0, l = parts.length; i < l; i++) {
+                if (hasOwnProperty.call(source, parts[i])) {
+                    source = source[parts[i]];
+                } else {
+                    return null;
+                }
+            }
+
+            return source;
+        },
+
+        /**
+         * Return the key name based on the value using strict equality.
+         *
+         * @param {Object} object
+         * @param {*} value
+         * @returns {String}
+         */
+        keyOf: function(object, value) {
+            for (var key in object) {
+                if (hasOwnProperty.call(object, key) && object[key] === value) {
+                    return key;
+                }
+            }
+
+            return null;
+        },
+
+        /**
+         * Apply a function to every member of the object and return a new object.
+         *
+         * @param {Object} object
+         * @param {Function} fn
+         * @param {Function} bind
+         * @returns {Object}
+         */
+        map: function(object, fn, bind) {
+            var results = {};
+
+            for (var key in object) {
+                if (hasOwnProperty.call(object, key)) {
+                    results[key] = fn.call(bind, object[key], key, object);
+                }
+            }
+
+            return results;
+        },
 
         /**
          * Reset an object by un-linking any references between objects and arrays.
@@ -293,6 +482,24 @@
         },
 
         /**
+         * Execute every function in the object in order of definition.
+         *
+         * @param {Object} object
+         * @returns {Object}
+         */
+        run: function(object) {
+            var args = Array.slice(arguments, 1);
+
+            for (var key in object) {
+                if (object[key].apply) {
+                    object[key].apply(object, args);
+                }
+            }
+
+            return object;
+        },
+
+        /**
          * Convert an object to an HTTP query string.
          * Will take into account nested objects and arrays.
          *
@@ -310,14 +517,14 @@
 
                 var result;
 
-                switch (typeOf(value)){
+                switch (typeOf(value)) {
                     case 'object':
                         result = Object.toQueryString(value, key);
                     break;
                     case 'array':
                         var qs = {};
 
-                        value.forEach(function(val, i){
+                        value.forEach(function(val, i) {
                             qs[i] = val;
                         });
 
@@ -342,8 +549,7 @@
     Object.alias({
         append: 'assign',
         subset: 'pick',
-        getLength: 'size',
-        keyOf: 'findKey'
+        getLength: 'size'
     });
 
 }).call(this);

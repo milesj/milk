@@ -5,7 +5,8 @@
 
     this.Milk = {
         version: '%version%',
-        build: '%build%'
+        build: '%build%',
+        polyfill: false
     };
 
     /** Window object */
@@ -29,74 +30,6 @@
         String = this.String, Date = this.Date, RegExp = this.RegExp,
         Number = this.Number, Boolean = this.Boolean, Error = this.Error,
         Math = this.Math;
-
-    /*------------------------------------ Vendors ------------------------------------*/
-
-    /**
-     * Mapping of functions in Milk that need to be required in vendors.
-     * Will need to polyfill any missing functions.
-     *
-     * Argument Legend:
-     *  a = array, f = function, b = scope bind, i = integer, s = string, o = object,
-     *  k = key, v = value, ~ = boolean or random arg, . = repeating arg
-     *
-     *                          Lodash              Underscore          Sugar
-     *  Array
-     *      clone()             clone(a)            clone(a)            clone()                     !!!
-     *      clean()             compact(a)          compact(a)          compact()
-     *      invoke(s)           invoke(a, s, .)     invoke(a, s, .)     x
-     *      associate(a)        object(a, a)        object(a, a)        zip(a)
-     *      link(o)             x                   x                   x
-     *      contains(v, i)      contains(a, v, i)   contains(a, v)      x
-     *      append(a)           union(a, a)         union(a, a)         add(v)                      !!!
-     *      getLast()           last()              last()              last(i)
-     *      getRandom()         x                   x                   sample(i)
-     *      include(v)          include(a, v, i)    include(a, v, i)    x                           !!!
-     *      combine(a)          union(a, a)         union(a, a)         union(a)                    !!!
-     *      erase(v)            x                   x                   remove()
-     *      empty()             x                   x                   x
-     *      flatten()           flatten(a, ~, f, b) flatten(a, ~)       flatten(i)                  !!!
-     *      pick()              x                   x                   x
-     *      hexToRgb()          x                   x                   x
-     *      rgbToHex()          x                   x                   x
-     *  Object
-     *      clone(o)            clone(o)            clone(o)            clone(o, ~)
-     *      merge(o, .)         merge(o, ., f, b)   x                   merge(o, o, ~, ~)           !!!
-     *      append(o)           assign(o, o)        extend(o, o)        x
-     *      subset(o, k)        pick(o, f, b)       pick(o, k*)         select(o, k)
-     *      getLength(o)        size(o)             size(o)             size(o)
-     *      keyOf(o, v)         findKey(o, f, b)    x                   x
-     *      contains(o, v)      contains(o, v, i)   contains(o, v, i)   x
-     *      toQueryString(o, ~) x                   x                   toQueryString(o, ~)
-     *  Number
-     *      random(min, max)    random(min, max)    random(min, max)    random(min, max)
-     *      limit(min, max)     x                   x                   clamp(min, max)
-     *      round(i)            x                   x                   round(i)
-     *      times(f, b)         times(i, f, b)      times(i, f, b)      times(f)
-     *      toFloat()           x                   x                   x
-     *      toInt()             x                   x                   x
-     *  Function
-     *      bind(b)             bind(f, b, .)       bind(f, b, .)       bind(b, .)
-     *      pass(a, b)          x                   x                   x
-     *      delay(i, b, a)      delay(f, i, ~)      delay(f, i, ~)      delay(i, .)                 !!!
-     *      periodical(i, b, a) x                   x                   every(i, .)
-     *      attempt(a, b)       x                   x                   x
-     *  String
-     *      contains(v, i)      contains(s, v, i)   contains(s, v, i)   has(v)
-     *      test(r, p)          x                   x                   x
-     *      trim()              x                   x                   x
-     *      clean()             x                   x                   compact()
-     *      camelCase()         x                   x                   camelize()
-     *      hyphenate()         x                   x                   dasherize()
-     *      capitalize()        x                   x                   capitalize()
-     *      escapeRegExp()      x                   x                   escapeRegExp()
-     *      toInt()             x                   x                   toNumber()
-     *      toFloat()           x                   x                   toFloat()
-     *      hexToRgb()          x                   x                   x
-     *      rgbToHex()          x                   x                   x
-     *      substitute()        x                   x                   assign(.)
-     *      uniqueID()          uniqueId(s)         uniqueId(s)         x
-     */
 
     /*------------------------------------ Functions ------------------------------------*/
 
@@ -553,10 +486,10 @@
         var mapping = [
             [
                 [Array],
-                ['compact', 'difference', 'drop', 'findIndex', 'first', 'flatten', 'head', 'indexOf', 'initial', 'intersection', 'last', 'lastIndexOf', 'range', 'rest', 'sortedIndex', 'tail', 'take', 'union', 'uniq', 'unique', 'unzip', 'without', 'zip', 'zipObject']
+                ['compact', 'difference', 'drop', 'findIndex', 'first', 'flatten', 'filter', 'head', 'indexOf', 'initial', 'intersection', 'last', 'lastIndexOf', 'map', 'range', 'rest', 'sortedIndex', 'tail', 'take', 'union', 'uniq', 'unique', 'unzip', 'without', 'zip', 'zipObject']
             ], [
                 [Array, Object, String],
-                ['all', 'any', 'at', 'collect', 'contains', 'countBy', 'detect', 'each', 'every', 'filter', 'find', 'findWhere', 'foldl', 'foldr', 'forEach', 'groupBy', 'inject', 'invoke', 'map', 'max', 'min', 'pluck', 'reduce', 'reduceRight', 'reject', 'select', 'shuffle', 'size', 'some', 'sortBy', 'toArray', 'where']
+                ['all', 'any', 'at', 'collect', 'contains', 'countBy', 'detect', 'each', 'every', 'find', 'findWhere', 'foldl', 'foldr', 'forEach', 'groupBy', 'inject', 'invoke', 'max', 'min', 'pluck', 'reduce', 'reduceRight', 'reject', 'select', 'shuffle', 'size', 'some', 'sortBy', 'toArray', 'where']
             ], [
                 [Function],
                 ['bind', 'compose', 'createCallback', 'debounce', 'defer', 'delay', 'memoize', 'once', 'partial', 'partialRight', 'throttle']
