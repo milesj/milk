@@ -305,8 +305,85 @@ suite('Polyfill', function() {
     });
 
     suite('String', function() {
-        suite('uniqueID', function() {
+        suite('camelCase', function() {
+            test('should convert dashes to camel case', function() {
+                equal('I-like-cookies'.camelCase(), 'ILikeCookies');
+            });
+        });
 
+        suite('capitalize', function() {
+            test('should capitalize all words', function() {
+                equal('i like cookies'.capitalize(), 'I Like Cookies');
+            });
+        });
+
+        suite('clean', function() {
+            test('should remove extra whitespace', function() {
+                equal(' i      like     cookies      \n\n'.clean(), 'i like cookies');
+            });
+        });
+
+        suite('contains', function() {
+            test('should return true', function() {
+                assert.isTrue('abc'.contains('b'));
+            });
+        });
+
+        suite('escapeRegExp', function() {
+            test('should escape special chars', function() {
+                equal('animals.sheep[1]'.escapeRegExp(), "animals\\.sheep\\[1\\]");
+            });
+        });
+
+        suite('hyphenate', function() {
+            test('should convert camel case to dashes', function() {
+                equal('ILikeCookies'.hyphenate(), '-i-like-cookies');
+            });
+        });
+
+        suite('hexToRgb', function() {
+            test('should turn hex codes into rgb codes', function() {
+                equal('#123'.hexToRgb(), 'rgb(17, 34, 51)');
+                equal('112233'.hexToRgb(), 'rgb(17, 34, 51)');
+                deepEqual('#112233'.hexToRgb(true), [17, 34, 51]);
+            });
+        });
+
+        suite('rgbToHex', function() {
+            test('should turn rgb codes into hex codes', function() {
+                equal('rgb(17, 34, 51)'.rgbToHex(), '#112233');
+                deepEqual('rgb(17, 34, 51)'.rgbToHex(true), ['11', '22', '33']);
+                equal('rgba(17, 34, 51, 0)'.rgbToHex(), 'transparent');
+            });
+        });
+
+        suite('substitute', function() {
+            test('should replace values in the string', function() {
+                var myString = '{subject} is {property_1} and {property_2}.';
+                var myObject = { subject: 'Jack Bauer', property_1: 'our lord', property_2: 'saviour' };
+
+                equal(myString.substitute(myObject), 'Jack Bauer is our lord and saviour.');
+            });
+        });
+
+        suite('stripScripts', function() {
+            test('should remove script tags', function() {
+                equal("<script>alert('Hello')</script>Hello, World.".stripScripts(), 'Hello, World.');
+            });
+        });
+
+        suite('toInt', function() {
+            test('should convert to numbers', function() {
+                equal('4em'.toInt(), 4);
+                equal('10px'.toInt(), 10);
+            });
+        });
+
+        suite('toFloat', function() {
+            test('should convert to floats', function() {
+                equal('95.25%'.toFloat(), 95.25);
+                equal('10.848'.toFloat(), 10.848);
+            });
         });
     });
 

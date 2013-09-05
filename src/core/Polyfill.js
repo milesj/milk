@@ -322,9 +322,149 @@
 
     /*------------------------------------ Strings ------------------------------------*/
 
-    // Legacy and compatibility
-    String.alias({
-        uniqueID: 'uniqueId'
+    String.polyfill({
+
+        /**
+         * Converts a hyphenated string to a camelcased string.
+         *
+         * @returns {String}
+         */
+        camelCase: function() {
+            return this.replace(/-\D/g, function(match) {
+                return match.charAt(1).toUpperCase();
+            });
+        },
+
+        /**
+         * Converts the first letter of each word in a string to uppercase.
+         *
+         * @returns {String}
+         */
+        capitalize: function() {
+            return this.replace(/\b[a-z]/g, function(match) {
+                return match.toUpperCase();
+            });
+        },
+
+        /**
+         * Removes extraneous whitespace.
+         *
+         * @returns {String}
+         */
+        clean: function() {
+            return this.replace(/\s+/g, ' ').trim();
+        },
+
+        /**
+         * Escapes all regular expression characters from the string.
+         *
+         * @returns {String}
+         */
+        escapeRegExp: function() {
+            return this.replace(/([-.*+?^${}()|[\]\/\\])/g, '\\$1');
+        },
+
+        /**
+         * Converts a camelcased string to a hyphenated string.
+         *
+         * @returns {String}
+         */
+        hyphenate: function() {
+            return this.replace(/[A-Z]/g, function(match) {
+                return ('-' + match.charAt(0).toLowerCase());
+            });
+        },
+
+        /**
+         * Parses this string and returns a number of the specified radix or base.
+         *
+         * @param {Number} base
+         * @returns {Number}
+         */
+        toInt: function(base) {
+            return parseInt(this, base || 10);
+        },
+
+        /**
+         * Parses this string and returns a floating point number.
+         *
+         * @returns {Number}
+         */
+        toFloat: function() {
+            return parseFloat(this);
+        },
+
+        /**
+         * Converts a hexadecimal color value to RGB.
+         * Input string must be in one of the following hexadecimal color formats (with or without the hash).
+         * '#ffffff', #fff', 'ffffff', or 'fff'
+         *
+         * @param {boolean} toArray
+         * @returns {String|Array}
+         */
+        hexToRgb: function(toArray) {
+            var rgb = hexToRgb(this);
+
+            if (toArray) {
+                return rgb;
+            }
+
+            return 'rgb(' + rgb.join(', ') + ')';
+        },
+
+        /**
+         * Converts an RGB color value to hexadecimal.
+         * Input string must be in one of the following RGB color formats.
+         * 'rgb(255, 255, 255)', or 'rgba(255, 255, 255, 1)'
+         *
+         * @param {boolean} toArray
+         * @returns {Array|String}
+         */
+        rgbToHex: function(toArray) {
+            var matches = Array.from(this.match(/^rgba?\((\d{1,3}), (\d{1,3}), (\d{1,3})(?:, (\d{1,3}))?\)$/));
+                matches.shift();
+
+            return rgbToHex(matches.map(function(value) {
+                return parseInt(value, 10);
+            }), !toArray);
+        },
+
+        /**
+         * Strips the String of its tags and anything in between them.
+         *
+         * @param {Function} exec
+         * @returns {String}
+         */
+        stripScripts: function(exec) {
+            var scripts = '';
+            var text = this.replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, function(all, code) {
+                scripts += code + '\n';
+                return '';
+            });
+
+            if (typeOf(exec) === 'function') {
+                exec(scripts, text);
+            }
+
+            return text;
+        },
+
+        /**
+         * Substitutes keywords in a string using an object/array. Removes undefined keywords and ignores escaped keywords.
+         *
+         * @param {Object} object
+         * @param {RegExp} regexp
+         * @returns {String}
+         */
+        substitute: function(object, regexp) {
+            return this.replace(regexp || (/\\?\{([^{}]+)\}/g), function(match, name) {
+                if (match.charAt(0) === '\\') {
+                    return match.slice(1);
+                }
+
+                return (object[name]) ? object[name] : '';
+            });
+        }
     });
 
     /*------------------------------------ Objects ------------------------------------*/
